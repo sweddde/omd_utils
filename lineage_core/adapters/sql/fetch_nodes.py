@@ -2,18 +2,17 @@ FETCH_NODES = """
 select 
     n.id 
     , n.name
-    , n.description
     , n.namespace_id
     , ns.name as db_schema
     , n.updated
 from
-    graphdb_graph.nodes n
+    graph.nodes n
 join
-    graphdb_graph.nodes_tags nt 
+    graph.nodes_tags nt 
 on
     n.id = nt.node_id
 join 
-    graphdb_graph.namespaces ns 
+    graph.namespaces ns 
 on
     n.namespace_id = ns.id
 where 

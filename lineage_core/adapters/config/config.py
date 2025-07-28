@@ -9,7 +9,7 @@ from omd_airflow_utils.lineage_core.domain.types import MappingType
 
 class RetryConfig(BaseModel):
     total: int = 3
-    backoff_factor: float = 1.5
+    backoff_factor: float = 3.0
     status_codes: list[int] = [500, 502, 503, 504]
 
 

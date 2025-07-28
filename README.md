@@ -8,7 +8,7 @@
 
 **Операторы:**
 - `RegisterLineageOperator`: регистрация lineage по заданным парам
-- `DeleteLineageOperator`: удаление lineage по заданным парам  
+- `OmdLineageDeleteOperator`: удаление lineage по заданным парам  
 - `MGraphToOMDLineageOperator`: автоматическая синхронизация lineage из PostgreSQL graph структур
 
 **Сервисы (Business Logic):**
@@ -32,22 +32,20 @@
 ## Возможности
 
 ### Основные Features
--  Поддержка 1:1, 1:N, N:1, N:N отображений entities
--  Автоматическая генерация lineage из PostgreSQL graph структур
--  Incremental vs Full sync режимы
--  Fail silently или с ошибкой поведение
--  HTTP retry с exponential backoff
--  Rate limiting для API запросов
--  Comprehensive кеширование entities
--  Differential sync (добавление только изменений)
+- Поддержка 1:1, 1:N, N:1, N:N отображений entities
+- Автоматическая генерация lineage из PostgreSQL graph структур
+- Incremental vs Full sync режимы
+- HTTP retry с exponential backoff и rate limiting
+- Comprehensive кеширование entities
+- Differential sync (добавление только изменений)
+- Синхронизация описаний таблиц и колонок
 
 ### Enterprise Features
--  Configuration management через Airflow Variables
--  Connection pooling и resource management
--  Detailed logging на всех уровнях
--  Graceful error handling в bulk операциях
--  Context managers для resource cleanup
--  Dependency injection для тестирования
+- Configuration management через Airflow Variables
+- Connection pooling и resource management
+- Detailed logging на всех уровнях
+- Graceful error handling в bulk операциях
+- Context managers для resource cleanup
 
 ## Операторы
 
@@ -61,10 +59,9 @@
 | `source_entities`  | `List[TypedFQN]`     | Список исходных сущностей                    |
 | `target_entities`  | `List[TypedFQN]`     | Список целевых сущностей                     |
 | `mapping`          | `MappingType`        | Стратегия отображения                        |
-| `config`           | `LineageConfig`      | Конфигурация клиента и оператора             |
-| `fail_silently`    | `bool`               | Поведение при ошибках                        |
+| `config`           | `LineageConfig`      | Конфигурация клиента и оператора (optional) |
 
-### DeleteLineageOperator
+### OmdLineageDeleteOperator
 
 Удаление lineage по заданным парам entities.
 
@@ -84,7 +81,7 @@
 | `metadata_conn_id`    | `str`                | ID подключения к OpenMetadata                |
 | `database_conn_id`    | `str`                | ID подключения к PostgreSQL                  |
 | `schema_filter`       | `List[str]`          | Фильтр схем для обработки                    |
-| `path_cutoff`         | `int`                | Максимальная длина путей в графе             |
+| `sync_descriptions`   | `bool`               | Синхронизировать описания (default: False)   |
 | `config_variable_name`| `str`                | Имя Airflow Variable с конфигурацией         |
 
 ## Типы и Enum'ы
@@ -112,12 +109,8 @@ EntityType.DATABASE
 ```python
 from airflow import DAG
 from datetime import datetime
-from omd_airflow_utils.operators.omd_lineage_register import (
-    RegisterLineageOperator,
-)
-from omd_airflow_utils.lineage_core.domain.types import (
-    TypedFQN, EntityType, MappingType
-)
+from omd_airflow_utils.operators.omd_lineage_register import RegisterLineageOperator
+from omd_airflow_utils.lineage_core.domain.types import TypedFQN, EntityType, MappingType
 
 with DAG(
     dag_id='simple_lineage_dag',
@@ -159,12 +152,14 @@ with DAG(
         metadata_conn_id='openmetadata',
         database_conn_id='postgres_lineage',
         schema_filter=['sp_raw', 'sp_stage', 'sp_marts'],
-        path_cutoff=10,
+        sync_descriptions=True,
         config_variable_name='lineage_sync_config',
     )
 ```
 
 ### Конфигурация через Airflow Variables
+
+Создайте Airflow Variable `lineage_sync_config`:
 
 ```json
 {
@@ -173,19 +168,19 @@ with DAG(
   "tag_id": 60,
   "operator_id": 14,
   "schema_filter": ["sp_raw", "sp_stage", "sp_marts"],
-  "db_name": "sacristy",
-  "db_user": "lineage_user",
-  "db_host": "postgres.company.com",
-  "db_port": 5432
+  "context": {
+    "service_name": "Sacristy",
+    "database_name": "sacristy"
+  }
 }
 ```
 
 ## Конфигурация
 
-### LineageConfig
+### LineageConfig (опционально)
 
 ```python
-from omd_airflow_utils.lineage_core.adapters.config import (
+from omd_airflow_utils.lineage_core.adapters.config.config import (
     LineageConfig, HttpxClientConfig, RetryConfig
 )
 
@@ -198,13 +193,14 @@ config = LineageConfig(
             backoff_factor=0.5,
             status_codes=[500, 502, 503, 504]
         )
-    ),
-    operator=OperatorConfig(
-        defaults=OperatorDefaultsConfig(
-            fail_silently=True,
-            mapping=MappingType.ONE_TO_ONE
-        )
     )
 )
 ```
 
+## Тестирование
+
+```bash
+# Запуск всех тестов
+pytest tests/ -v
+
+```

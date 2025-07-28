@@ -162,7 +162,7 @@ class NodeRepository:
         tag_id: int,
         schemas: list[str],
         operator_id: int,
-        last_executed: datetime,
+        last_executed: Optional[datetime],
         safety_window_hours: int = 48,
     ) -> tuple[list[Node], list[Node]]:
         """Fetches nodes for incremental processing, returning active and inactive separately."""

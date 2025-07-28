@@ -2,14 +2,13 @@ FETCH_NODES_ADDITIONAL= """
 select 
     n.id 
     , n.name
-    , n.description
     , n.namespace_id
     , ns.name as db_schema
     , n.updated
 from
-    graphdb_graph.nodes n
+    graph.nodes n
 join 
-    graphdb_graph.namespaces ns 
+    graph.namespaces ns 
 on 
     n.namespace_id = ns.id
 where 

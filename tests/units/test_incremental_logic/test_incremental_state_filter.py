@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-from operators.omd_airflow_utils.lineage_core.adapters.node_repository import \
-    NodeRepository
 
 
 def test_accepted_node_goes_to_active(mock_repo, now, node_factory):

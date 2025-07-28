@@ -3,7 +3,7 @@ select
     source_id as from_node_id
     , target_id as to_node_id
 from 
-    graphdb_graph.dependencies
+    graph.dependencies
 where 
     removed_commit_id is null
    and (

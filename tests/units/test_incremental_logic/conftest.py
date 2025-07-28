@@ -2,10 +2,10 @@ from datetime import datetime
 
 import pytest
 
-from operators.omd_airflow_utils.lineage_core.adapters.node_repository import (
+from omd_airflow_utils.lineage_core.adapters.node_repository import (
     NodeRepository,
 )
-from operators.omd_airflow_utils.lineage_core.domain.models import Node
+from omd_airflow_utils.lineage_core.domain.models import Node
 
 
 @pytest.fixture

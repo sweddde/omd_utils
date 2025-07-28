@@ -1,5 +1,6 @@
-from operators.omd_airflow_utils.lineage_core.services.lineage_graph_builder import \
-    LineageGraphService
+from omd_airflow_utils.lineage_core.services.lineage_graph_builder import (
+    LineageGraphService,
+)
 from omd_airflow_utils.tests.conftest import make_edge
 
 
