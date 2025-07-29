@@ -143,5 +143,8 @@ class MGraphToOMDLineageOperator(BaseOperator):
     def _update_config(self, config_mgr: ConfigManager) -> None:
         """Updates Airflow variable state after sync completes."""
         config_mgr.update_last_executed(datetime.now(timezone.utc))
+        if self.settings.load_type == LineageLoadType.INIT:
+            config_mgr.update_config_flag('load_type', LineageLoadType.INCREMENTAL.value)
+
         if self.settings.clean_before_update:
             config_mgr.update_config_flag('clean_before_update', False)

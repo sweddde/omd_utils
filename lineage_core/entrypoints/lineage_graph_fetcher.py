@@ -81,9 +81,13 @@ class LineageGraphFetcher:
             affected_fqns = {
                 self.settings.context.fqn(n.db_schema, n.name) for n in active + inactive
             }
-            edges = repo.fetch_edges([n.id for n in nodes])
-            nodes = self._add_missing_nodes(repo, nodes, edges)
-            return LineageGraphResult(nodes=nodes, edges=edges, affected_fqns=affected_fqns)
+            edges = repo.fetch_edges([n.id for n in nodes]) if nodes else []
+            nodes = self._add_missing_nodes(repo, nodes, edges) if edges else nodes
+            return LineageGraphResult(
+                nodes=nodes,
+                edges=edges,
+                affected_fqns=affected_fqns,
+            )
 
     def _add_missing_nodes(
         self, repo: NodeRepository, nodes: List[Node], edges: List[LineageEdge]
